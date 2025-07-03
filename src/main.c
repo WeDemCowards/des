@@ -1,0 +1,278 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "des.h"
+#include "keygen.h"
+
+enum Function {
+	UNSPECIFIED,
+	ENCRYPT,
+	DECRYPT,
+	KEYGEN,
+};
+enum Mode {
+	ECB,
+	CBC,
+};
+
+int init_des(enum Function function, enum Mode mode, FILE *in_fd, FILE *out_fd, FILE *key_fd);
+int des_ecb(FILE *in_fd, FILE *out_fd, uint64_t ks[16]);
+void print_usage();
+
+
+
+int main(int argc, char **argv) {
+	enum Function function = UNSPECIFIED;
+	enum Mode mode = ECB;
+	
+	char *in_fp  = NULL;
+	char *out_fp = NULL;
+	char *key_fp = NULL;
+	
+	// Print help if no args are passed
+	if (argc < 2) {
+		print_usage();
+		return 1;
+	}
+	
+	// Check argv[1] for FUNCTIONS
+	if (0) ;
+	else if ((strcmp(argv[1], "-e") == 0) || (strcmp(argv[1], "--encrypt") == 0)) {
+		function = ENCRYPT;
+	}
+	else if ((strcmp(argv[1], "-d") == 0) || (strcmp(argv[1], "--decrypt") == 0)) {
+		function = DECRYPT;
+	}
+	else if ((strcmp(argv[1], "-g") == 0) || (strcmp(argv[1], "--keygen") == 0)) {
+		function = KEYGEN;
+	}
+	else if ((strcmp(argv[1], "-h") == 0) || (strcmp(argv[1], "--help") == 0)) {
+		print_usage();
+		return 0;
+	}
+	else {
+		fprintf(stderr, "error: invalid FUNCTION \"%s\"\n", argv[1]);
+		return 1;
+	}
+	
+	// Check the rest of the OPTIONS
+	char next_arg = 0; // non-zero indicates we are reading an option's value next.
+	for (int i=2; i<argc; i++) {
+		if (next_arg == 0) {
+			if (0) ;
+			else if ((strcmp(argv[i], "-i") == 0) || (strcmp(argv[i], "--input") == 0)) {
+				next_arg = 'i';
+			}
+			else if ((strcmp(argv[i], "-o") == 0) || (strcmp(argv[i], "--output") == 0)) {
+				next_arg = 'o';
+			}
+			else if ((strcmp(argv[i], "-k") == 0) || (strcmp(argv[i], "--key") == 0)) {
+				next_arg = 'k';
+			}
+			else if ((strcmp(argv[i], "-m") == 0) || (strcmp(argv[i], "--mode") == 0)) {
+				next_arg = 'm';
+			}
+			else {
+				fprintf(stderr, "error: invalid option \"%s\"\n", argv[i]);
+				return 1;
+			}
+		}
+		else if (next_arg == 'i') {
+			in_fp = argv[i];
+			next_arg = 0;
+		}
+		else if (next_arg == 'o') {
+			out_fp = argv[i];
+			next_arg = 0;
+		}
+		else if (next_arg == 'k') {
+			key_fp = argv[i];
+			next_arg = 0;
+		}
+		else if (next_arg == 'm') {
+			if (0) ;
+			else if (strcmp(argv[i], "ecb") == 0) {
+				mode = ECB;
+				next_arg = 0;
+			}
+			else if (strcmp(argv[i], "cbc") == 0) {
+				mode = CBC;
+				next_arg = 0;
+			}
+			else {
+				fprintf(stderr, "error: invalid option for mode of operation: \"%s\"", argv[i]);
+				return 1;
+			}
+		}
+		else {
+			fprintf(stderr, "critical error: invalid next_char %c\n", next_arg);
+			return 1;
+		}
+	}
+	
+	// At this point, we have received our arguments. Now we open our files up.
+	FILE *in_fd  = NULL;
+	FILE *out_fd = NULL;
+	FILE *key_fd = NULL;
+	
+	// Open in_fd and key_fd if the function is encryption/decryption
+	if (function == ENCRYPT || function == DECRYPT) {
+		// Open in_fd
+		if (in_fp == NULL) {
+			in_fd = stdin;
+		}
+		else {
+			if ((in_fd = fopen(in_fp, "rb")) == NULL) {
+				fprintf(stderr, "error: could not open file \"%s\" for reading\n", in_fp);
+				return 1;
+			}
+		}
+		// Open key_fd
+		if (key_fp == NULL) {
+			fprintf(stderr, "error: a keyfile (-k) must be provided for encryption/decryption\n");
+			return 1;
+		}
+		if ((key_fd = fopen(key_fp, "rb")) == NULL) {
+			fprintf(stderr, "error: could not open file \"%s\" for reading\n", key_fp);
+			return 1;
+		}
+	}
+	// Open out_fd
+	if (out_fp == NULL) {
+		out_fd = stdout;
+	}
+	else {
+		if ((out_fd = fopen(out_fp, "wb")) == NULL) {
+			fprintf(stderr, "error: could not open file \"%s\" for writing\n", out_fp);
+			return 1;
+		}
+	}
+	
+	// Now that we have our files open, we can start the program in the chosen function.
+	if (0) ;
+	// KEY GENERATION
+	else if (function == KEYGEN) {
+		uint64_t key;
+		if (generate_des_key(&key)) {
+			return 1;
+		}
+		if ((fwrite(&key, 1, sizeof(key), out_fd)) != sizeof(key)) {
+			fprintf(stderr, "error: failed to write the correct data to the key. Delete your key and try again.\n");
+			return 1;
+		}
+	}
+	// ENCRYPTION & DECRYPTION
+	else if (function == ENCRYPT || function == DECRYPT) {
+		init_des(function, mode, in_fd, out_fd, key_fd);
+	}
+	
+	// Close our files
+	if (in_fd && in_fd != stdin) fclose(in_fd);
+	if (out_fd && out_fd != stdout) fclose(out_fd);
+	if (key_fd) fclose(key_fd);
+	
+	return 0;
+}
+
+// Drives the des encryption process
+int init_des(enum Function function, enum Mode mode, FILE *in_fd, FILE *out_fd, FILE *key_fd) {
+	uint64_t key = 0;
+	uint64_t ks[16] = {0};
+	// 1. Read key from file
+	if ((fread(&key, 1, sizeof(key), key_fd)) != sizeof(key)) {
+		fprintf(stderr, "Could not read the correct amount of data from key file.\n");
+		return 1;
+	}
+	// 2. Validate key (can disable by flipping conditional below, if you wish to use unvalidated keys)
+	if (1) {
+		if (count_even_bytes(key)) {
+			fprintf(stderr, "error: provided key does not have odd parity.\n");
+			return 1;
+		}
+	}
+	// 3. Key Scheduling
+	schedule_keys(key, ks);
+	if (function == DECRYPT) {
+		for (int i=0; i<8; i++) {
+			uint64_t tmp = ks[i];
+			ks[i] = ks[15-i];
+			ks[15-i] = tmp;
+		}
+	}
+	// 4. Modes
+	if (0) ;
+	else if (mode == ECB) {
+		des_ecb(in_fd, out_fd, ks);
+	}
+	else if (mode == CBC) {
+		fprintf(stderr, "CBC not implemented! Sorry!\n");
+		return 1;
+	}
+	return 0;
+}
+
+int des_ecb(FILE *in_fd, FILE *out_fd, uint64_t ks[16]) {
+	uint64_t message = 0;
+	uint64_t ciphertext;
+	size_t bytes_read;
+	while ((bytes_read = fread(&message, 1, sizeof(message), in_fd))) {
+		// This message requires padding. For this implementation I will pad with zeros.
+		// This is easy to achieve by shifting the message, since fread will fill the 
+		// LSB side of the message.
+		if (bytes_read < sizeof(message)) {
+			message <<= ((sizeof(message) * 8) - (bytes_read * 8));
+		}
+		// Perform des on message
+		ciphertext = des(message, ks);
+		// Write ciphertext to file
+		if (fwrite(&ciphertext, 1, sizeof(ciphertext), out_fd) != sizeof(ciphertext)) {
+			fprintf(stderr, "error: couldn't write the entire ciphertext block\n");
+		}
+	}
+	return 0;
+}
+
+void print_usage() {
+	printf("Usage: des FUNCTION [OPTIONS]\n\n");
+	printf("FUNCTION\n");
+	printf("\t-e, --encrypt\t\tEncrypt the input data (Requires a keyfile)\n");
+	printf("\t-d, --decrypt\t\tDecrypt the input data (Requires a keyfile)\n");
+	printf("\t-g, --keygen\t\tGenerate a des key\n");
+	printf("\t-h, --help\t\tPrint this help page\n");
+	printf("\n");
+	
+	printf("OPTIONS\n");
+	printf("\t-i <filepath>, --input <filepath>\tSpecify the input for the cipher\n");
+	printf("\t-o <filepath>, --output <filepath>\tSpecify the output for the cipher or keygen\n");
+	printf("\t-k <filepath>, --key <filepath>\t\tSpecify the key for the cipher\n");
+	printf("\t-m <mode>, --mode <mode>\t\tSpecify blockcipher mode of operation.\n");
+	printf("\n");
+	
+	printf("MODES\n");
+	printf("\tecb\t\tElectronic Codebook\n");
+	printf("\tcbc\t\tCipher Block Chaining\n");
+	printf("\n");
+	
+	printf("DEFAULT BEHAVIOUR\n");
+	printf("\tSpecifying a FUNCTION is necessary. If no function is specified, then this\n\thelp page will be printed.\n");
+	printf("\n");
+	
+	printf("\tIf keygen is selected, the only relevant option is -o --output. If this is\n\tnot specified, the generated key will be written to stdout.\n");
+	printf("\n");
+	
+	printf("\tIf encryption or decryption are selected, a filepath for the key must be\n\tprovided.\n");
+	printf("\n");
+	
+	printf("\tIf the following options are not provided, their default behaviour is as follows:\n\n");
+	printf("\t\tcipher mode: encrypt\n");
+	printf("\t\tmode of operation: ecb\n");
+	printf("\t\tinput: stdin\n");
+	printf("\t\toutput: stdout\n");
+	printf("\n");
+	
+	printf("AUTHOR\n");
+	printf("\tAaron McCurdy\n");
+	printf("\tmccurdya@proton.me\n");
+	printf("\thttps://github.com/WeDemCowards\n");
+}
