@@ -10,7 +10,7 @@ OPTIONS
     -i <filepath>, --input <filepath>   Specify the input for the cipher
     -o <filepath>, --output <filepath>  Specify the output for the cipher or keygen
     -k <filepath>, --key <filepath>     Specify the key for the cipher
-    -m <mode>, --mode <mode>            Specify blockcipher mode of operation.
+    -m <mode>,     --mode <mode>        Specify blockcipher mode of operation.
 
 MODES
     ecb     Electronic Codebook
@@ -26,7 +26,7 @@ DEFAULT BEHAVIOUR
     If encryption or decryption are selected, a filepath for the key must be
     provided.
 
-    If the following options are not provided, their default behaviour is as follows:
+    If the following options are not provided, their default behaviour is as follows: 
         - mode:   ecb
         - input:  stdin
         - output: stdout

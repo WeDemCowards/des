@@ -187,7 +187,7 @@ int init_des(enum Function function, enum Mode mode, FILE *in_fd, FILE *out_fd, 
 	// 2. Validate key (can disable by flipping conditional below, if you wish to use unvalidated keys)
 	if (1) {
 		if (count_even_bytes(key)) {
-			fprintf(stderr, "error: provided key does not have odd parity.\n");
+			fprintf(stderr, "error: provided key does not have odd byte parity.\n");
 			return 1;
 		}
 	}
@@ -234,45 +234,41 @@ int des_ecb(FILE *in_fd, FILE *out_fd, uint64_t ks[16]) {
 }
 
 void print_usage() {
-	printf("Usage: des FUNCTION [OPTIONS]\n\n");
+	printf("Usage: des FUNCTION [OPTIONS]\n");
+	printf("\n");
 	printf("FUNCTION\n");
-	printf("\t-e, --encrypt\t\tEncrypt the input data (Requires a keyfile)\n");
-	printf("\t-d, --decrypt\t\tDecrypt the input data (Requires a keyfile)\n");
-	printf("\t-g, --keygen\t\tGenerate a des key\n");
-	printf("\t-h, --help\t\tPrint this help page\n");
+	printf("    -e, --encrypt                       Encrypt the input data (Requires a keyfile)\n");
+	printf("    -d, --decrypt                       Decrypt the input data (Requires a keyfile)\n");
+	printf("    -g, --keygen                        Generate a des key\n");
+	printf("    -h, --help                          Print this help page\n");
 	printf("\n");
-	
 	printf("OPTIONS\n");
-	printf("\t-i <filepath>, --input <filepath>\tSpecify the input for the cipher\n");
-	printf("\t-o <filepath>, --output <filepath>\tSpecify the output for the cipher or keygen\n");
-	printf("\t-k <filepath>, --key <filepath>\t\tSpecify the key for the cipher\n");
-	printf("\t-m <mode>, --mode <mode>\t\tSpecify blockcipher mode of operation.\n");
+	printf("    -i <filepath>, --input <filepath>   Specify the input for the cipher\n");
+	printf("    -o <filepath>, --output <filepath>  Specify the output for the cipher or keygen\n");
+	printf("    -k <filepath>, --key <filepath>     Specify the key for the cipher\n");
+	printf("    -m <mode>,     --mode <mode>        Specify blockcipher mode of operation.\n");
 	printf("\n");
-	
 	printf("MODES\n");
-	printf("\tecb\t\tElectronic Codebook\n");
-	printf("\tcbc\t\tCipher Block Chaining\n");
+	printf("    ecb     Electronic Codebook\n");
+	printf("    cbc     Cipher Block Chaining\n");
 	printf("\n");
-	
 	printf("DEFAULT BEHAVIOUR\n");
-	printf("\tSpecifying a FUNCTION is necessary. If no function is specified, then this\n\thelp page will be printed.\n");
+	printf("    Specifying a FUNCTION is necessary. If no function is specified, then this\n");
+	printf("    help page will be printed.\n");
 	printf("\n");
-	
-	printf("\tIf keygen is selected, the only relevant option is -o --output. If this is\n\tnot specified, the generated key will be written to stdout.\n");
+	printf("    If keygen is selected, the only relevant option is -o --output. If this is\n");
+	printf("    not specified, the generated key will be written to stdout.\n");
 	printf("\n");
-	
-	printf("\tIf encryption or decryption are selected, a filepath for the key must be\n\tprovided.\n");
+	printf("    If encryption or decryption are selected, a filepath for the key must be\n");
+	printf("    provided.\n");
 	printf("\n");
-	
-	printf("\tIf the following options are not provided, their default behaviour is as follows:\n\n");
-	printf("\t\tcipher mode: encrypt\n");
-	printf("\t\tmode of operation: ecb\n");
-	printf("\t\tinput: stdin\n");
-	printf("\t\toutput: stdout\n");
+	printf("    If the following options are not provided, their default behaviour is as follows: \n");
+	printf("        - mode:   ecb\n");
+	printf("        - input:  stdin\n");
+	printf("        - output: stdout\n");
 	printf("\n");
-	
 	printf("AUTHOR\n");
-	printf("\tAaron McCurdy\n");
-	printf("\tmccurdya@proton.me\n");
-	printf("\thttps://github.com/WeDemCowards\n");
+	printf("    Aaron McCurdy\n");
+	printf("    mccurdya@proton.me\n");
+	printf("    https://github.com/WeDemCowards\n");
 }
