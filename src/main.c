@@ -19,7 +19,8 @@ enum Mode {
 };
 
 int init_des(enum Function function, enum Mode mode, FILE *in_fd, FILE *out_fd, FILE *key_fd);
-int des_ecb(FILE *in_fd, FILE *out_fd, uint64_t ks[16]);
+int des_ecb_enc(FILE *in_fd, FILE *out_fd, uint64_t ks[16]);
+int des_ecb_dec(FILE *in_fd, FILE *out_fd, uint64_t ks[16]);
 void print_usage();
 
 
@@ -205,7 +206,8 @@ int init_des(enum Function function, enum Mode mode, FILE *in_fd, FILE *out_fd, 
 	// 4. Modes
 	if (0) ;
 	else if (mode == ECB) {
-		des_ecb(in_fd, out_fd, ks);
+		if (function == ENCRYPT) des_ecb_enc(in_fd, out_fd, ks);
+		if (function == DECRYPT) des_ecb_dec(in_fd, out_fd, ks);
 	}
 	else if (mode == CBC) {
 		fprintf(stderr, "CBC not implemented! Sorry!\n");
@@ -214,28 +216,48 @@ int init_des(enum Function function, enum Mode mode, FILE *in_fd, FILE *out_fd, 
 	return 0;
 }
 
-int des_ecb(FILE *in_fd, FILE *out_fd, uint64_t ks[16]) {
+int des_ecb_enc(FILE *in_fd, FILE *out_fd, uint64_t ks[16]) {
 	uint64_t message;
 	uint64_t ciphertext;
 	size_t bytes_read;
 
-	while ((message = 0, (bytes_read = fread(&message, 1, sizeof(message), in_fd)))) {
-		
-		if (bytes_read < sizeof(message)) {
-			// Perform padding on incomplete block
-			uint8_t pad_len = sizeof(message) - bytes_read;
-			for (size_t i=sizeof(message); i>sizeof(message) - pad_len; i--) {
-				message |= (uint64_t)pad_len << ((i * 8) - 8);
-			}
-		}
-		
-		// Perform des on message
+	// Encrypt and write WHOLE BLOCKS
+	for ( message = 0; (bytes_read = fread(&message, 1, sizeof(message), in_fd)) == sizeof(message); message = 0) {
 		ciphertext = des(message, ks);
-		
-		// Write ciphertext to file
 		if (fwrite(&ciphertext, 1, sizeof(ciphertext), out_fd) != sizeof(ciphertext)) {
 			fprintf(stderr, "error: couldn't write the entire ciphertext block\n");
 		}
+	}
+	// Arrange padded message
+	uint8_t pad_len = sizeof(message) - bytes_read;
+	print_binary_uint64(message);
+	for (size_t i=sizeof(message); i>bytes_read; i--) {
+		message |= (uint64_t)pad_len << (8 * (i-1));
+		print_binary_uint64(message);
+	}
+	// Encrypt and write the PADDED BLOCK
+	ciphertext = des(message, ks);
+	if (fwrite(&ciphertext, 1, sizeof(ciphertext), out_fd) != sizeof(ciphertext)) {
+		fprintf(stderr, "error: couldn't write the entire ciphertext block\n");
+	}
+	return 0;
+}
+
+int des_ecb_dec(FILE *in_fd, FILE *out_fd, uint64_t ks[16]) {
+	uint64_t ciphertext;
+	uint64_t plaintext;
+	size_t bytes_read;
+
+	for (ciphertext = 0; (bytes_read = fread(&ciphertext, 1, sizeof(ciphertext), in_fd)) == sizeof(ciphertext); ciphertext = 0) {
+		plaintext = des(ciphertext, ks);
+		if (fwrite(&plaintext, 1, sizeof(plaintext), out_fd) != sizeof(plaintext)) {
+			fprintf(stderr, "error: couldn't write the entire plaintext block\n");
+		}
+	}
+	if (bytes_read != 0) {
+		fprintf(stderr, "des_ecb_dec(): ciphertext does not fit expected alignment (64 bits)\n");
+		fprintf(stderr, "               Expect the decryption to be corrupted.\n");
+		return 1;
 	}
 	return 0;
 }

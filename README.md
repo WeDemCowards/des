@@ -17,4 +17,4 @@ A robust and (hopefully) pleasant to use command line tool for DES.
 
 ## ISSUES
 
-Padding follows PKCS #5, but has not been implemented properly. If the given message equals 0 mod 64, then the final padding bit (0x8 * 8) is not written. This will have to be rewritten.
+- Padding is now implemented properly for encryption. The next step is to update the decryption function to detect and remove it.
