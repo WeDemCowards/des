@@ -184,7 +184,7 @@ int init_des(enum Function function, enum Mode mode, FILE *in_fd, FILE *out_fd, 
 	uint64_t ks[16] = {0};
 	// 1. Read key from file
 	if ((fread(&key, 1, sizeof(key), key_fd)) != sizeof(key)) {
-		fprintf(stderr, "Could not read the correct amount of data from key file.\n");
+		fprintf(stderr, "error: failed to read the correct amount of data from key file.\n");
 		return 1;
 	}
 	// 2. Validate key (can disable by flipping conditional below, if you wish to use unvalidated keys)
@@ -210,8 +210,7 @@ int init_des(enum Function function, enum Mode mode, FILE *in_fd, FILE *out_fd, 
 		if (function == DECRYPT) des_ecb_dec(in_fd, out_fd, ks);
 	}
 	else if (mode == CBC) {
-		fprintf(stderr, "CBC not implemented! Sorry!\n");
-		return 1;
+		fprintf(stderr, "CBC not implemented. Sorry!\n");
 	}
 	return 0;
 }
@@ -230,10 +229,8 @@ int des_ecb_enc(FILE *in_fd, FILE *out_fd, uint64_t ks[16]) {
 	}
 	// Arrange padded message
 	uint8_t pad_len = sizeof(message) - bytes_read;
-	print_binary_uint64(message);
 	for (size_t i=sizeof(message); i>bytes_read; i--) {
 		message |= (uint64_t)pad_len << (8 * (i-1));
-		print_binary_uint64(message);
 	}
 	// Encrypt and write the PADDED BLOCK
 	ciphertext = des(message, ks);
