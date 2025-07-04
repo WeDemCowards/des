@@ -224,7 +224,7 @@ int des_ecb(FILE *in_fd, FILE *out_fd, uint64_t ks[16]) {
 		if (bytes_read < sizeof(message)) {
 			// Perform padding on incomplete block
 			uint8_t pad_len = sizeof(message) - bytes_read;
-			for (int i=sizeof(message); i>sizeof(message) - pad_len; i--) {
+			for (size_t i=sizeof(message); i>sizeof(message) - pad_len; i--) {
 				message |= (uint64_t)pad_len << ((i * 8) - 8);
 			}
 		}
