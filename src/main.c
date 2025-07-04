@@ -5,6 +5,8 @@
 #include "des.h"
 #include "keygen.h"
 
+#include "utils.h"
+
 enum Function {
 	UNSPECIFIED,
 	ENCRYPT,
@@ -213,18 +215,23 @@ int init_des(enum Function function, enum Mode mode, FILE *in_fd, FILE *out_fd, 
 }
 
 int des_ecb(FILE *in_fd, FILE *out_fd, uint64_t ks[16]) {
-	uint64_t message = 0;
+	uint64_t message;
 	uint64_t ciphertext;
 	size_t bytes_read;
-	while ((bytes_read = fread(&message, 1, sizeof(message), in_fd))) {
-		// This message requires padding. For this implementation I will pad with zeros.
-		// This is easy to achieve by shifting the message, since fread will fill the 
-		// LSB side of the message.
+
+	while ((message = 0, (bytes_read = fread(&message, 1, sizeof(message), in_fd)))) {
+		
 		if (bytes_read < sizeof(message)) {
-			message <<= ((sizeof(message) * 8) - (bytes_read * 8));
+			// Perform padding on incomplete block
+			uint8_t pad_len = sizeof(message) - bytes_read;
+			for (int i=sizeof(message); i>sizeof(message) - pad_len; i--) {
+				message |= (uint64_t)pad_len << ((i * 8) - 8);
+			}
 		}
+		
 		// Perform des on message
 		ciphertext = des(message, ks);
+		
 		// Write ciphertext to file
 		if (fwrite(&ciphertext, 1, sizeof(ciphertext), out_fd) != sizeof(ciphertext)) {
 			fprintf(stderr, "error: couldn't write the entire ciphertext block\n");
