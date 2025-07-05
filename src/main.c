@@ -64,10 +64,10 @@ int main(int argc, char **argv) {
 	for (int i=2; i<argc; i++) {
 		if (next_arg == 0) {
 			if (0) ;
-			else if ((strcmp(argv[i], "-i") == 0) || (strcmp(argv[i], "--input") == 0)) {
+			else if ((strcmp(argv[i], "-i") == 0) || (strcmp(argv[i], "--input") == 0) || (strcmp(argv[i], "-in") == 0)) {
 				next_arg = 'i';
 			}
-			else if ((strcmp(argv[i], "-o") == 0) || (strcmp(argv[i], "--output") == 0)) {
+			else if ((strcmp(argv[i], "-o") == 0) || (strcmp(argv[i], "--output") == 0) || (strcmp(argv[i], "-out") == 0)) {
 				next_arg = 'o';
 			}
 			else if ((strcmp(argv[i], "-k") == 0) || (strcmp(argv[i], "--key") == 0)) {
