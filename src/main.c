@@ -244,13 +244,37 @@ int des_ecb_dec(FILE *in_fd, FILE *out_fd, uint64_t ks[16]) {
 	uint64_t ciphertext;
 	uint64_t plaintext;
 	size_t bytes_read;
-
-	for (ciphertext = 0; (bytes_read = fread(&ciphertext, 1, sizeof(ciphertext), in_fd)) == sizeof(ciphertext); ciphertext = 0) {
+	int no_write_round_one;
+	
+	for ( (ciphertext = 0, no_write_round_one=1);
+	      (bytes_read = fread(&ciphertext, 1, sizeof(ciphertext), in_fd)) == sizeof(ciphertext);
+		  (ciphertext = 0) )
+	{
+		// Do not write on the first round of the loop
+		if (no_write_round_one) no_write_round_one = 0;
+		
+		// Write the plaintext calculated last round to the output.
+		else if (fwrite(&plaintext, 1, sizeof(plaintext), out_fd) != sizeof(plaintext))
+			fprintf(stderr, "des_ecb_dec(): failed to write the entire plaintext block. Decryption may be corrupted.\n");
+		
+		// Calculate plaintext for the next round
 		plaintext = des(ciphertext, ks);
-		if (fwrite(&plaintext, 1, sizeof(plaintext), out_fd) != sizeof(plaintext)) {
-			fprintf(stderr, "error: couldn't write the entire plaintext block\n");
+	}
+	// Now we can expect that plaintext holds the padding block
+	
+	// The last byte should indicate the padding length
+	size_t pad_len = plaintext >> (8 * 7);
+	for (size_t i=7; i>8-pad_len; i--) {
+		uint8_t pad_byte = plaintext >> (8 * (i-1));
+		if (pad_byte != pad_len) {
+			fprintf(stderr, "des_ecb_dec(): The padding bytes are not consistent. %lu != %u. Decryption may be corrupted.\n", pad_len, pad_byte);
 		}
 	}
+	// Write final block to output
+	if (fwrite(&plaintext, 1, (sizeof(plaintext) - pad_len), out_fd) != (sizeof(plaintext) - pad_len))
+			fprintf(stderr, "des_ecb_dec(): failed to write the entire plaintext block. Decryption may be corrupted.\n");
+	
+	// Return error if message length not a multiple of 8 bytes
 	if (bytes_read != 0) {
 		fprintf(stderr, "des_ecb_dec(): ciphertext does not fit expected alignment (64 bits)\n");
 		fprintf(stderr, "               Expect the decryption to be corrupted.\n");
