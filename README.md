@@ -2,23 +2,6 @@
 
 A robust and (hopefully) pleasant to use command line tool for DES.
 
-## TO DO
-
-- [x] Key generation
-- [x] Key scheduling
-- [x] DES
-- [ ] Modes of operation
-    - [x] ECB
-    - [ ] CBC
-    - [ ] OFB
-    - [ ] ...
-- [ ] 3DES
-- [ ] Proper padding scheme
-
-## ISSUES
-
-- Padding is now implemented properly for encryption. The next step is to update the decryption function to detect and remove it.
-
 ## USAGE
 
 ```
@@ -61,3 +44,21 @@ AUTHOR
     https://github.com/WeDemCowards
 
 ```
+
+## TO DO
+
+- [x] Key generation
+- [x] Key scheduling
+- [x] DES
+- [ ] Modes of operation
+    - [x] ECB
+    - [ ] CBC
+    - [ ] OFB
+    - [ ] ...
+- [ ] 3DES
+- [x] Proper padding scheme (PKCS #5)
+
+## ISSUES
+
+- Command line arguments are not totally intuitive. I find myself wanting to use `-in`, or even just `--encrypt <filename>`. If I find it unintuitive then it is certain that others will too.
+
