@@ -244,25 +244,21 @@ int des_ecb_dec(FILE *in_fd, FILE *out_fd, uint64_t ks[16]) {
 	uint64_t ciphertext;
 	uint64_t plaintext;
 	size_t bytes_read;
-	int no_write_round_one;
+
+	bytes_read = fread(&ciphertext, 1, sizeof(ciphertext), in_fd);
+	plaintext = des(ciphertext, ks);
 	
-	for ( (ciphertext = 0, no_write_round_one=1);
-	      (bytes_read = fread(&ciphertext, 1, sizeof(ciphertext), in_fd)) == sizeof(ciphertext);
-		  (ciphertext = 0) )
+	for (   ciphertext = 0;
+			(bytes_read = fread(&ciphertext, 1, sizeof(ciphertext), in_fd)) == sizeof(ciphertext);
+			ciphertext = 0 )
 	{
-		// Do not write on the first round of the loop
-		if (no_write_round_one) no_write_round_one = 0;
-		
-		// Write the plaintext calculated last round to the output.
-		else if (fwrite(&plaintext, 1, sizeof(plaintext), out_fd) != sizeof(plaintext))
+		if (fwrite(&plaintext, 1, sizeof(plaintext), out_fd) != sizeof(plaintext))
 			fprintf(stderr, "des_ecb_dec(): failed to write the entire plaintext block. Decryption may be corrupted.\n");
-		
-		// Calculate plaintext for the next round
+
 		plaintext = des(ciphertext, ks);
 	}
-	// Now we can expect that plaintext holds the padding block
-	
-	// The last byte should indicate the padding length
+
+	// We can now expect plaintext to hold the padding block.
 	size_t pad_len = plaintext >> (8 * 7);
 	for (size_t i=7; i>8-pad_len; i--) {
 		uint8_t pad_byte = plaintext >> (8 * (i-1));
