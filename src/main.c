@@ -247,7 +247,8 @@ int des_ecb_dec(FILE *in_fd, FILE *out_fd, uint64_t ks[16]) {
 
 	bytes_read = fread(&ciphertext, 1, sizeof(ciphertext), in_fd);
 	plaintext = des(ciphertext, ks);
-	
+
+	// Write each decrypted block to the output, except for the last one
 	for (   ciphertext = 0;
 			(bytes_read = fread(&ciphertext, 1, sizeof(ciphertext), in_fd)) == sizeof(ciphertext);
 			ciphertext = 0 )
