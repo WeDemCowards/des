@@ -25,8 +25,8 @@ void des_round(uint32_t *l, uint32_t *r, uint64_t key);
 
 //// IP and INVERSE IP
 
-/* inital_permutation: takes a 64 bit message, returns a 64 bit permutation */
-uint64_t inital_permutation(uint64_t m);
+/* initial_permutation: takes a 64 bit message, returns a 64 bit permutation */
+uint64_t initial_permutation(uint64_t m);
 
 /* inverse_initial_permutation: takes a 64 bit message, returns a 64 bit permutation*/
 uint64_t inverse_initial_permutation(uint64_t m);
