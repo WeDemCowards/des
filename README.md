@@ -53,3 +53,11 @@ AUTHOR
     - [ ] OFB
     - [ ] ...
 - [ ] 3DES
+
+## ISSUES:
+
+The system fails to be interoperatable in the following ways:
+
+- Endianess: The encryption and decryption process does not account for architectures with differing Endianess. You need to read the manual for `htobe64` and implement it where necessary.
+
+- Portability: The key generation uses Linux's `<sys/getrandom.h>`, with no option for Windows. It wouldn't (shouldn't) be too hard to make the program portable.
