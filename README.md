@@ -1,6 +1,6 @@
 # DES Command line tool
 
-A robust and (hopefully) pleasant to use command line tool for DES.
+A robust and (hopefully) pleasant to use command line tool for DES. Try it out!
 
 ## USAGE
 
@@ -47,18 +47,9 @@ AUTHOR
 
 ## TO DO
 
-- [x] Key generation
-- [x] Key scheduling
-- [x] DES
 - [ ] Modes of operation
     - [x] ECB
     - [ ] CBC
     - [ ] OFB
     - [ ] ...
 - [ ] 3DES
-- [x] Proper padding scheme (PKCS #5)
-
-## ISSUES
-
-- Command line arguments are not totally intuitive. I find myself wanting to use `-in`, or even just `--encrypt <filename>`. If I find it unintuitive then it is certain that others will too.
-
