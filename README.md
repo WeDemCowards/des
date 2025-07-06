@@ -52,6 +52,9 @@ AUTHOR
     - [ ] CBC
     - [ ] OFB
     - [ ] ...
+- [ ] Weak key detection
+- [ ] Robust test vector validation
+- [ ] Interoperability (see issues)
 - [ ] 3DES
 
 ## ISSUES:
