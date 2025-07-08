@@ -52,7 +52,7 @@ AUTHOR
     - [ ] CBC
     - [ ] OFB
     - [ ] ...
-- [ ] Weak key detection
+- [x] Weak key detection
 - [ ] Robust test vector validation
 - [ ] 3DES
 - [ ] Make portible for Windows
@@ -61,10 +61,6 @@ AUTHOR
 After CBC is implemeneted, I will consider the program *complete*. Other modes
 of operation would be nice to include also, but there isn't too much educational
 or functional benefit to this. This isn't meant to be a swiss army tool.
-
-### Weak key detection
-An easy feature to implement. Research the problem, but I will probably simply
-check for weak keys explicitly.
 
 ### 3DES
 Would be easy enough to implement, with the only problem being cluttering up my
