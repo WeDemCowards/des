@@ -197,6 +197,27 @@ int init_des(enum Function function, enum Mode mode, FILE *in_fd, FILE *out_fd, 
 			fprintf(stderr, "error: provided key does not have odd byte parity.\n");
 			return 1;
 		}
+		if (key == 0x0101010101010101 || key == 0x1010101010101010 || key == 0xFEFEFEFEFEFEFEFE || key == 0XEFEFEFEFEFEFEFEF) {
+			fprintf(stderr, "error: provided key is weak.\n");
+			return 1;
+		}
+		if (key == 0x01FE01FE01FE01FE ||
+			key == 0xFE01FE01FE01FE01 ||
+			key == 0x1FE01FE00EF10EF1 ||
+			key == 0xE01FE01FF10EF10E ||
+			key == 0x01E001E001F101F1 ||
+			key == 0xE001E001F101F101 ||
+			key == 0x1FFE1FFE0EFE0EFE ||
+			key == 0xFE1FFE1FFE0EFE0E ||
+			key == 0x011F011F010E010E ||
+			key == 0x1F011F010E010E01 ||
+			key == 0xE0FEE0FEF1FEF1FE ||
+			key == 0xFEE0FEE0FEF1FEF1 )
+			{
+				fprintf(stderr, "error: provided key is semi-weak.\n");
+				return 1;
+			}
+		
 	}
 	// 3. Key Scheduling
 	schedule_keys(key, ks);
