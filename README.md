@@ -47,6 +47,7 @@ AUTHOR
 
 ## TO DO
 
+- [ ] Fix endianess portability
 - [ ] Modes of operation
     - [x] ECB
     - [ ] CBC
@@ -54,13 +55,26 @@ AUTHOR
     - [ ] ...
 - [ ] Weak key detection
 - [ ] Robust test vector validation
-- [ ] Interoperability (see issues)
 - [ ] 3DES
+- [ ] Make portible for Windows
 
-## ISSUES:
+### Endianess (ISSUE)
+The encryption and decryption process does not account for architectures with
+differing Endianess. You need to read the manual for `htobe64` and implement it
+where necessary.
 
-The system fails to be interoperatable in the following ways:
+### Modes of Operation
+After CBC is implemeneted, I will consider the program *complete*. Other modes
+of operation would be nice to include also, but there isn't too much educational
+or functional benefit to this. This isn't meant to be a swiss army tool.
 
-- Endianess: The encryption and decryption process does not account for architectures with differing Endianess. You need to read the manual for `htobe64` and implement it where necessary.
+### Weak key detection
+An easy feature to implement. Research the problem, but I will probably simply
+check for weak keys explicitly.
 
-- Portability: The key generation uses Linux's `<sys/getrandom.h>`, with no option for Windows. It wouldn't (shouldn't) be too hard to make the program portable.
+### 3DES
+Would be easy enough to implement, with the only problem being cluttering up my
+nice and realtively simple interface. Will consider down the line.
+
+### Windows
+Probably not hard, I would just have to read up on the Microsoft CRT.
