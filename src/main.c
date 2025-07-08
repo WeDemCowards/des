@@ -193,10 +193,12 @@ int init_des(enum Function function, enum Mode mode, FILE *in_fd, FILE *out_fd, 
 	key = htole64(key);
 	// 2. Validate key (can disable by flipping conditional below, if you wish to use unvalidated keys)
 	if (1) {
+		// 2.1 check key parity (must be odd)
 		if (count_even_bytes(key)) {
 			fprintf(stderr, "error: provided key does not have odd byte parity.\n");
 			return 1;
 		}
+		// 2.2 Check for weak keys
 		if (key == 0x0101010101010101 || key == 0x1010101010101010 || key == 0xFEFEFEFEFEFEFEFE || key == 0XEFEFEFEFEFEFEFEF) {
 			fprintf(stderr, "error: provided key is weak.\n");
 			return 1;
@@ -217,7 +219,6 @@ int init_des(enum Function function, enum Mode mode, FILE *in_fd, FILE *out_fd, 
 				fprintf(stderr, "error: provided key is semi-weak.\n");
 				return 1;
 			}
-		
 	}
 	// 3. Key Scheduling
 	schedule_keys(key, ks);
