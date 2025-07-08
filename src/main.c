@@ -1,3 +1,4 @@
+#include <endian.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -161,6 +162,7 @@ int main(int argc, char **argv) {
 			return 1;
 		}
 		if ((fwrite(&key, 1, sizeof(key), out_fd)) != sizeof(key)) {
+			// TODO: Don't tell the user to delete the file, just delete the file.
 			fprintf(stderr, "error: failed to write the correct data to the key. Delete your key and try again.\n");
 			return 1;
 		}
@@ -187,6 +189,8 @@ int init_des(enum Function function, enum Mode mode, FILE *in_fd, FILE *out_fd, 
 		fprintf(stderr, "error: failed to read the correct amount of data from key file.\n");
 		return 1;
 	}
+	// 1.1 Ensure consistent endianess
+	key = htole64(key);
 	// 2. Validate key (can disable by flipping conditional below, if you wish to use unvalidated keys)
 	if (1) {
 		if (count_even_bytes(key)) {
@@ -222,7 +226,9 @@ int des_ecb_enc(FILE *in_fd, FILE *out_fd, uint64_t ks[16]) {
 
 	// Encrypt and write WHOLE BLOCKS
 	for ( message = 0; (bytes_read = fread(&message, 1, sizeof(message), in_fd)) == sizeof(message); message = 0) {
+		message = htole64(message);
 		ciphertext = des(message, ks);
+		ciphertext = le64toh(ciphertext);
 		if (fwrite(&ciphertext, 1, sizeof(ciphertext), out_fd) != sizeof(ciphertext)) {
 			fprintf(stderr, "error: couldn't write the entire ciphertext block\n");
 		}
@@ -234,6 +240,7 @@ int des_ecb_enc(FILE *in_fd, FILE *out_fd, uint64_t ks[16]) {
 	}
 	// Encrypt and write the PADDED BLOCK
 	ciphertext = des(message, ks);
+	ciphertext = le64toh(ciphertext);
 	if (fwrite(&ciphertext, 1, sizeof(ciphertext), out_fd) != sizeof(ciphertext)) {
 		fprintf(stderr, "error: couldn't write the entire ciphertext block\n");
 	}
@@ -246,6 +253,7 @@ int des_ecb_dec(FILE *in_fd, FILE *out_fd, uint64_t ks[16]) {
 	size_t bytes_read;
 
 	bytes_read = fread(&ciphertext, 1, sizeof(ciphertext), in_fd);
+	ciphertext = htole64(ciphertext);
 	plaintext = des(ciphertext, ks);
 
 	// Write each decrypted block to the output, except for the last one
@@ -253,6 +261,8 @@ int des_ecb_dec(FILE *in_fd, FILE *out_fd, uint64_t ks[16]) {
 			(bytes_read = fread(&ciphertext, 1, sizeof(ciphertext), in_fd)) == sizeof(ciphertext);
 			ciphertext = 0 )
 	{
+		ciphertext = htole64(ciphertext);
+		plaintext = le64toh(plaintext);
 		if (fwrite(&plaintext, 1, sizeof(plaintext), out_fd) != sizeof(plaintext))
 			fprintf(stderr, "des_ecb_dec(): failed to write the entire plaintext block. Decryption may be corrupted.\n");
 
@@ -268,6 +278,7 @@ int des_ecb_dec(FILE *in_fd, FILE *out_fd, uint64_t ks[16]) {
 		}
 	}
 	// Write final block to output
+	plaintext = le64toh(plaintext);
 	if (fwrite(&plaintext, 1, (sizeof(plaintext) - pad_len), out_fd) != (sizeof(plaintext) - pad_len))
 			fprintf(stderr, "des_ecb_dec(): failed to write the entire plaintext block. Decryption may be corrupted.\n");
 	
