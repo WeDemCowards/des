@@ -47,7 +47,6 @@ AUTHOR
 
 ## TO DO
 
-- [ ] Fix endianess portability
 - [ ] Modes of operation
     - [x] ECB
     - [ ] CBC
@@ -57,11 +56,6 @@ AUTHOR
 - [ ] Robust test vector validation
 - [ ] 3DES
 - [ ] Make portible for Windows
-
-### Endianess (ISSUE)
-The encryption and decryption process does not account for architectures with
-differing Endianess. You need to read the manual for `htobe64` and implement it
-where necessary.
 
 ### Modes of Operation
 After CBC is implemeneted, I will consider the program *complete*. Other modes
@@ -77,4 +71,5 @@ Would be easy enough to implement, with the only problem being cluttering up my
 nice and realtively simple interface. Will consider down the line.
 
 ### Windows
-Probably not hard, I would just have to read up on the Microsoft CRT.
+Probably not hard, I would just have to read up on the Microsoft CRT. Will
+require writing your own portable functions for `htobe`, etc.
