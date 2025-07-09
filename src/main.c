@@ -26,7 +26,7 @@ void print_usage();
 
 int main(int argc, char **argv) {
 	enum Function function = UNSPECIFIED;
-	enum Mode mode = ECB;
+	enum Mode mode = CBC;
 	
 	char *in_fp  = NULL;
 	char *out_fp = NULL;
@@ -270,7 +270,7 @@ void print_usage() {
 	printf("    provided.\n");
 	printf("\n");
 	printf("    If the following options are not provided, their default behaviour is as follows: \n");
-	printf("        - mode:   ecb\n");
+	printf("        - mode:   cbc\n");
 	printf("        - input:  stdin\n");
 	printf("        - output: stdout\n");
 	printf("\n");

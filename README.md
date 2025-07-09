@@ -34,7 +34,7 @@ DEFAULT BEHAVIOUR
     provided.
 
     If the following options are not provided, their default behaviour is as follows: 
-        - mode:   ecb
+        - mode:   cbc
         - input:  stdin
         - output: stdout
 
