@@ -6,7 +6,7 @@ CFLAGS = -Wall -Wextra -O2
 TARGET = des
 
 # The source files (located in the src/ directory)
-SRCS = src/main.c src/des.c src/keygen.c
+SRCS = src/main.c src/des_modes.c src/keygen.c src/des.c 
 
 # The object files (derived from the source files, placed in the build/ directory)
 OBJS = $(SRCS:src/%.c=build/%.o)
