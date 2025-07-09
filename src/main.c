@@ -20,8 +20,6 @@ enum Mode {
 };
 
 int init_des(enum Function function, enum Mode mode, FILE *in_fd, FILE *out_fd, FILE *key_fd);
-int des_ecb_enc(FILE *in_fd, FILE *out_fd, uint64_t ks[16]);
-int des_ecb_dec(FILE *in_fd, FILE *out_fd, uint64_t ks[16]);
 void print_usage();
 
 
@@ -236,7 +234,8 @@ int init_des(enum Function function, enum Mode mode, FILE *in_fd, FILE *out_fd, 
 		if (function == DECRYPT) des_ecb_dec(in_fd, out_fd, ks);
 	}
 	else if (mode == CBC) {
-		fprintf(stderr, "CBC not implemented. Sorry!\n");
+		if (function == ENCRYPT) des_cbc_enc(in_fd, out_fd, ks);
+		if (function == DECRYPT) des_cbc_dec(in_fd, out_fd, ks);
 	}
 	return 0;
 }
