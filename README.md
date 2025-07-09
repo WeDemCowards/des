@@ -49,7 +49,7 @@ AUTHOR
 
 - [ ] Modes of operation
     - [x] ECB
-    - [ ] CBC
+    - [x] CBC
     - [ ] OFB
     - [ ] ...
 - [x] Weak key detection
